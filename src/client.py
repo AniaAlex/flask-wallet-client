@@ -1,20 +1,19 @@
-from openid4v.message import WalletInstanceAttestationJWT
-from idpyoidc.message import Message
-
+from bs4 import BeautifulSoup
+import requests
 import pdb
-from fedservice.utils import make_federation_combo
-from fedservice.entity import get_verified_trust_chains
-import json
-import pprint
 from cryptojwt import JWT
 from cryptojwt.utils import b64e
+from fedservice.entity import get_verified_trust_chains
+from fedservice.utils import make_federation_combo
 from idpyoidc import verified_claim_name
 from idpyoidc.client.defaults import CC_METHOD
+from idpyoidc.key_import import import_jwks, store_under_other_id
+from idpyoidc.message import Message
 from idpyoidc.util import rndstr
-from idpyoidc.key_import import store_under_other_id
-from idpyoidc.key_import import import_jwks
-
+from openid4v.message import WalletInstanceAttestationJWT
 from urllib.parse import urlparse, parse_qsl
+import json
+import pprint
 
 wallet_provider = "https://openidfed-test-1.sunet.se:5001"
 ephemeral_key = None
@@ -99,15 +98,10 @@ def find_issuers_of_trustmark(credential_issuers, credential_type):
                         cred_issuer_to_use.append(eid)
                 else:
                     print("Could not verify trust mark")
-
     return cred_issuer_to_use
 
 
-# main():
-# getopt
-# param EID
 cnf = json.loads(open("client.conf", "r").read())
-
 app = make_federation_combo(**cnf["entity"])
 app.federation_entity = app["federation_entity"]
 trust_anchor = app.federation_entity.function.trust_chain_collector.trust_anchors
@@ -224,7 +218,19 @@ req_info = _service.get_request_parameters(request_args, **kwargs)
 
 auth_req_uri = req_info["url"]
 print(f"Redirect to: {req_info['url']}")
+resp = requests.get(req_info["url"])
+form = BeautifulSoup(resp.content).find_all("form")[1]
+form_payload = {}
+for input in form.find_all("input"):
+    form_payload[input.get("name")] = "theron"
+resp = requests.post(form.get("action"), data=form_payload, cookies=resp.cookies)
+form = BeautifulSoup(resp.content).find("form")
+form_payload = {}
+for input in form.find_all("input"):
+    form_payload[input.get("name")] = input.get("value", "")
+resp = requests.post(form.get("action"), data=form_payload, cookies=resp.cookies)
 
+pdb.set_trace()
 url = input("Enter url you got back please:")
 issuer_string = urlparse(url).path.split("/authz_cb/")[1]
 

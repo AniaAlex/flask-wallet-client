@@ -10,4 +10,6 @@ dependencies = [
 "fedservice @ git+https://github.com/SUNET/fedservice.git",
 "openid4v @ git+https://github.com/SUNET/openid4v.git",
 "idpysdjwt @ git+https://github.com/SUNET/idpy-sdjwt.git",
+"requests",
+"bs4"
 ]
