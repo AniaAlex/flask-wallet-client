@@ -1,7 +1,14 @@
 #!/usr/bin/env python3
 
-from bs4 import BeautifulSoup
+import json
+import logging
+import pprint
+from urllib.parse import parse_qsl, urlparse
+
 import requests
+import typer
+import urllib3
+from bs4 import BeautifulSoup
 from cryptojwt import JWT
 from cryptojwt.utils import b64e
 from fedservice.entity import get_verified_trust_chains
@@ -12,13 +19,14 @@ from idpyoidc.key_import import import_jwks, store_under_other_id
 from idpyoidc.message import Message
 from idpyoidc.util import rndstr
 from openid4v.message import WalletInstanceAttestationJWT
-from urllib.parse import urlparse, parse_qsl
-import json
-import pprint
-import urllib3
-import typer
 
 urllib3.disable_warnings()
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+)
+logger = logging.getLogger(__name__)
 
 
 def get_consumer(app, issuer):
@@ -44,9 +52,14 @@ def find_credential_issuers(app):
     list_resp = app["federation_entity"].do_request("list", entity_id=ta_id)
 
     print(f"Subordinates to TA ({ta_id}): {list_resp}")
+
     for entity_id in list_resp:
         # first find out if the entity is an openid credential issuer
-        _metadata = app["federation_entity"].get_verified_metadata(entity_id)
+        try:
+            _metadata = app["federation_entity"].get_verified_metadata(entity_id)
+        except Exception as e:
+            logger.error(f"Failed subordinates metadata retrieval: {str(e)}")
+            continue
         if not _metadata:  # Simple fix
             continue
         if "openid_credential_issuer" in _metadata:
@@ -114,9 +127,9 @@ def main(config: str):
 
     print("== Getting Wallet Instance Attestation ==")
     ephemeral_key = app["wallet"].mint_new_key()
-    app["wallet"].context.wia_flow[ephemeral_key.kid]["ephemeral_key_tag"] = (
-        ephemeral_key.kid
-    )
+    app["wallet"].context.wia_flow[ephemeral_key.kid][
+        "ephemeral_key_tag"
+    ] = ephemeral_key.kid
     _wia_info = app["wallet"].context.wia_flow[ephemeral_key.kid]
     wallet_instance_attestation, war_payload = app[
         "wallet"
@@ -195,7 +208,6 @@ def main(config: str):
         "redirect_uri": _redirect_uri,
         "issuer_state": issuer_state,
     }
-    authz_req_args = request_args
 
     kwargs = {
         "state": rndstr(24),
@@ -226,7 +238,7 @@ def main(config: str):
 
     req_info = _service.get_request_parameters(request_args, **kwargs)
     print("== Following SAML2 flow ==")
-    auth_req_uri = req_info["url"]
+
     print(f"Redirect to: {req_info['url']}")
     session = requests.session()
     resp = session.get(req_info["url"])
