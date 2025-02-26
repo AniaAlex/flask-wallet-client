@@ -39,5 +39,5 @@ jobs:
           pytest --maxfail=5 --disable-warnings -v
       - name: Test to run the tool
         run: |
-          cd src
+          cd src/euwallet_cli
           python3 client.py client-dev.conf

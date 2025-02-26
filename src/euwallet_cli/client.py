@@ -4,7 +4,6 @@
 import pprint
 from urllib.parse import parse_qsl, urlparse
 
-import openid4v
 import requests
 import typer
 import urllib3
@@ -13,14 +12,16 @@ from cryptojwt import JWT
 from cryptojwt.utils import b64e
 from fedservice.entity import get_verified_trust_chains
 from fedservice.utils import make_federation_combo
+from idpyoidc import verified_claim_name
 
 # from idpyoidc import verified_claim_name
 from idpyoidc.client.defaults import CC_METHOD
 from idpyoidc.key_import import import_jwks, store_under_other_id
 from idpyoidc.message import Message
 from idpyoidc.util import rndstr
+from openid4v.message import WalletInstanceAttestationJWT
 
-from utils import SaveLoadManager
+from euwallet_cli.utils import SaveLoadManager
 
 """
 In the code below:
@@ -163,7 +164,7 @@ def main(config_path: str):
 
     _jwt = JWT(key_jar=app["wallet"].keyjar)
 
-    _jwt.msg_cls = openid4v.message.WalletInstanceAttestationJWT
+    _jwt.msg_cls = WalletInstanceAttestationJWT
 
     _ass = _jwt.unpack(token=wallet_instance_attestation["assertion"])
 
@@ -391,13 +392,11 @@ def main(config_path: str):
         ],
     )
 
-    # print(
-    #     f"Signed JWT: {pprint.pp(resp['credentials'])} \n verified_claim: {
-    #       pprint.pp(resp[openid4v.verified_claim_name('credential')])}"
-    # )
+    print(
+        f"Signed JWT: {pprint.pp(resp['credentials'])} \n verified_claim: {
+          pprint.pp(resp[verified_claim_name('credential')])}"
+    )
 
-    print(f"{resp.__class__.__module__}.{resp.__class__.__name__}")
-    print(resp)
     SaveLoadManager.save_received_verifiable_credentials(
         vars(resp),
         f"{resp.__class__.__module__}.{resp.__class__.__name__}",

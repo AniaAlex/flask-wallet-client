@@ -5,15 +5,15 @@ from unittest.mock import patch
 
 import pytest
 
-from src.utils import SaveLoadManager
+from euwallet_cli.utils import SaveLoadManager
 
 
-@patch("src.utils.logger")
+@patch("euwallet_cli.utils.logger")
 def test_save_received_verifiable_credentials(mock_logger, tmp_path):
     """Test that verifiable credentials are correctly saved to a file."""
     test_path = tmp_path / "local"
 
-    with patch("src.utils.datetime") as mock_datetime:
+    with patch("euwallet_cli.utils.datetime") as mock_datetime:
         mock_datetime.now.return_value = datetime(2022, 3, 15, 23, 11, 12, 432048)
 
         request_result = {"credential": "test-data"}
@@ -46,11 +46,11 @@ def test_save_received_verifiable_credentials(mock_logger, tmp_path):
     )
 
 
-@patch("src.utils.logger")
+@patch("euwallet_cli.utils.logger")
 def test_failed_to_save_wrong_format(mock_logger, tmp_path):
     """Test that verifiable credentials are correctly saved to a file."""
     test_path = tmp_path / "local"
-    with patch("src.utils.datetime") as mock_datetime:
+    with patch("euwallet_cli.utils.datetime") as mock_datetime:
         mock_datetime.now.return_value = datetime(2022, 3, 15, 23, 11, 12, 432048)
 
         request_result = {"test-data"}

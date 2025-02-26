@@ -2,7 +2,7 @@ from unittest.mock import mock_open, patch
 
 import pytest
 
-from src.utils import SaveLoadManager
+from euwallet_cli.utils import SaveLoadManager
 
 
 @patch("builtins.open", mock_open(read_data='{"key": "value"}'))
@@ -19,7 +19,8 @@ def test_load_config():
     open.assert_called_once_with("test_path", "r")
 
 
-def test_load_config_file_not_found():
+@patch("euwallet_cli.utils.logger")
+def test_load_config_file_not_found(mock_logger):
     """
     FileNotFoundError to be raised
     When configuration file is not found
@@ -27,3 +28,4 @@ def test_load_config_file_not_found():
     with patch("builtins.open", side_effect=FileNotFoundError):
         with pytest.raises(FileNotFoundError):
             SaveLoadManager.load_config("wrong_cong_file.conf")
+    mock_logger.error.assert_called_with("Configuration file not found")

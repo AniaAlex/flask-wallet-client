@@ -27,10 +27,10 @@ class SaveLoadManager:
                 cnf = json.load(f)
             return cnf
         except FileNotFoundError as e:
-            logger.error(f"Configuration file not found: {e}", exc_info=True)
+            logger.error("Configuration file not found")
             raise e
         except Exception as e:
-            logger.error(f"Error loading configuration file {e}", exc_info=True)
+            logger.error(f"Error loading configuration file {str(e)}")
             raise e
 
     @staticmethod
