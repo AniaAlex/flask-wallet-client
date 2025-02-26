@@ -1,3 +1,5 @@
+
+
 #Ignore env 
 /env 
 
@@ -27,4 +29,10 @@ share/python-wheels/
 *.egg
 
 
+
+#local folder 
+local/
+
+#ruff_cache
+.ruff_cache/
 

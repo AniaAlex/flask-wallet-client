@@ -1,9 +1,11 @@
+
 [project]
 name = "euwallet-cli"
 version = "0.1.0"
 description = "Test client for eu wallet flows"
 readme = "README.md"
 requires-python = ">=3.8"
+
 dependencies = [
 "idpyoidc @ git+https://github.com/IdentityPython/idpy-oidc.git@issuer_metadata",
 "fedservice @ git+https://github.com/SUNET/fedservice.git",
@@ -11,7 +13,8 @@ dependencies = [
 "idpysdjwt @ git+https://github.com/SUNET/idpy-sdjwt.git",
 "requests",
 "typer",
-"beautifulsoup4"
+"beautifulsoup4",
+"pytest >= 8.3.4,<8.3.99"
 ]
 
 [tool.ruff]
@@ -21,7 +24,10 @@ line-length = 88
 # 1. Enable flake8-bugbear (`B`) rules, in addition to the defaults.
 select = ["E4", "E7", "E9", "F", "B"]
 
-[dependency-groups]
+[project.optional-dependencies]
 dev = [
     "ruff>=0.9.6",
 ]
+
+
+
